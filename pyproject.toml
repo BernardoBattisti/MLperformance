@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlperformance"
+version = "0.1.0"
+description = "Find the best machine learning algorithm for your data: upload a file, pick a target, compare models with charts."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Bernardo Battisti" }]
+requires-python = ">=3.10"
+dependencies = [
+    "scikit-learn>=1.6",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "streamlit>=1.46",
+    "plotly>=5.24",
+    "joblib>=1.4",
+    "openpyxl>=3.1",
+    "pyarrow>=15",
+]
+keywords = ["machine-learning", "automl", "model-selection", "scikit-learn", "education"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+boosting = ["xgboost>=2.0", "lightgbm>=4.0"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+mlperformance = "mlperformance.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["mlperformance*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
