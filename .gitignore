@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+release/
 .pytest_cache/
 
 # Virtual environments

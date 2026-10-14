@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Starts MLperformance on Linux/macOS. Creates the virtual environment on first run.
+# Runs MLperformance from source on Linux/macOS. Creates the virtual environment on first run.
 set -e
 cd "$(dirname "$0")"
 if [ ! -d .venv ]; then
@@ -8,4 +8,4 @@ if [ ! -d .venv ]; then
     .venv/bin/python -m pip install --upgrade pip
     .venv/bin/python -m pip install -r requirements.txt
 fi
-exec .venv/bin/python -m streamlit run app.py
+exec .venv/bin/python MLperformance.py

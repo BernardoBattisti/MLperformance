@@ -1,8 +1,8 @@
 scikit-learn>=1.6
 pandas>=2.2
 numpy>=1.26
-streamlit>=1.46
-plotly>=5.24
+PySide6>=6.7     # desktop interface
+matplotlib>=3.9  # charts
 joblib>=1.4
-openpyxl>=3.1   # Excel files
-pyarrow>=15     # Parquet files
+openpyxl>=3.1    # Excel files
+pyarrow>=15      # Parquet files

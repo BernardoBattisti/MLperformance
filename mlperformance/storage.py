@@ -1,8 +1,10 @@
 """Persist experiments to disk so they can be reopened later.
 
-Layout::
+Experiments live in ``$MLPERFORMANCE_RUNS_DIR`` if set, otherwise in the user's
+data folder (``%LOCALAPPDATA%/MLperformance/runs`` on Windows,
+``~/.local/share/MLperformance/runs`` elsewhere). Layout::
 
-    runs/<experiment-id>/
+    <runs>/<experiment-id>/
         experiment.json          # metrics, curves, settings (what the UI shows)
         models/<algorithm>.joblib  # fitted ModelBundle, ready for .predict()
 """
@@ -21,8 +23,13 @@ from .trainer import Experiment, ModelBundle
 
 
 def runs_root(runs_dir: str | Path | None = None) -> Path:
-    """Explicit folder, else $MLPERFORMANCE_RUNS_DIR, else ./runs."""
-    return Path(runs_dir or os.environ.get("MLPERFORMANCE_RUNS_DIR", "runs"))
+    """Explicit folder, else $MLPERFORMANCE_RUNS_DIR, else the user data folder."""
+    if runs_dir:
+        return Path(runs_dir)
+    if os.environ.get("MLPERFORMANCE_RUNS_DIR"):
+        return Path(os.environ["MLPERFORMANCE_RUNS_DIR"])
+    base = os.environ.get("LOCALAPPDATA") or Path.home() / ".local" / "share"
+    return Path(base) / "MLperformance" / "runs"
 
 
 def _slug(name: str) -> str:

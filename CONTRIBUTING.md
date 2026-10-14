@@ -10,7 +10,7 @@ cd MLperformance
 python -m venv .venv
 # Windows: .venv\Scripts\activate    Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt pytest
-streamlit run app.py
+python MLperformance.py
 ```
 
 ## Running the tests
@@ -21,6 +21,14 @@ pytest
 
 All tests must pass before a pull request is merged. GitHub Actions runs them automatically on Linux and Windows.
 
+## Building the executable
+
+```bat
+build.bat
+```
+
+This builds `dist\MLperformance\MLperformance.exe`, verifies it with `--self-test` and creates `release\MLperformance-windows.zip`. If you add a dependency that PyInstaller does not detect, list it under `hiddenimports` in `MLperformance.spec`.
+
 ## Adding an algorithm
 
 1. Add an `Algorithm(...)` entry to `mlperformance/models.py` with a name, the task (`CLASSIFICATION` or `REGRESSION`), a factory that receives the random seed, and a one-sentence description.
@@ -30,7 +38,8 @@ All tests must pass before a pull request is merged. GitHub Actions runs them au
 
 ## Guidelines
 
-- Keep the machine learning core (`data`, `preprocessing`, `models`, `trainer`, `storage`) independent of Streamlit.
+- Keep the machine learning core (`data`, `preprocessing`, `models`, `trainer`, `storage`) independent of the interface (`gui/`).
+- Never run training on the UI thread; use `gui/worker.py`.
 - Write user-facing text and documentation in English, aimed at beginners.
 - Add or update tests for behavior changes.
 - Keep pull requests focused on one change.

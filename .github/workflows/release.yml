@@ -1,0 +1,33 @@
+name: release
+
+# Builds the Windows app. Pushing a tag like v0.2.0 publishes it as a GitHub Release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt "pyinstaller>=6.10"
+      - run: pyinstaller --noconfirm --clean MLperformance.spec
+      - name: Verify the build
+        run: dist\MLperformance\MLperformance.exe --self-test
+        shell: cmd
+      - run: Compress-Archive -Path dist\MLperformance -DestinationPath MLperformance-windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MLperformance-windows
+          path: MLperformance-windows.zip
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: MLperformance-windows.zip

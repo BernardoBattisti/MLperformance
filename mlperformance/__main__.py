@@ -70,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
             stream.reconfigure(errors="replace")
     parser = argparse.ArgumentParser(prog="mlperformance",
                                      description="Compare machine learning algorithms on your data.")
-    parser.add_argument("--runs-dir", default=None, help="Where experiments are stored (default: ./runs)")
+    parser.add_argument("--runs-dir", default=None, help="Where experiments are stored (default: user data folder)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     train = sub.add_parser("train", help="Train and compare algorithms on a dataset")

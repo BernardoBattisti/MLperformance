@@ -14,8 +14,8 @@ dependencies = [
     "scikit-learn>=1.6",
     "pandas>=2.2",
     "numpy>=1.26",
-    "streamlit>=1.46",
-    "plotly>=5.24",
+    "PySide6>=6.7",
+    "matplotlib>=3.9",
     "joblib>=1.4",
     "openpyxl>=3.1",
     "pyarrow>=15",
@@ -30,10 +30,13 @@ classifiers = [
 
 [project.optional-dependencies]
 boosting = ["xgboost>=2.0", "lightgbm>=4.0"]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "pyinstaller>=6.10"]
 
 [project.scripts]
 mlperformance = "mlperformance.__main__:main"
+
+[project.gui-scripts]
+mlperformance-app = "mlperformance.gui.app:main"
 
 [tool.setuptools.packages.find]
 include = ["mlperformance*"]

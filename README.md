@@ -2,11 +2,13 @@
 
 **Find the best machine learning algorithm for your data, without writing code.**
 
-People who are just getting started with machine learning often don't know which algorithm to use for their data. MLperformance trains and compares many algorithms on your dataset and shows charts that explain which one performs best, and why.
+People who are just getting started with machine learning often don't know which algorithm to use for their data. MLperformance is a desktop app that trains and compares many algorithms on your dataset and shows charts that explain which one performs best.
 
-It runs **locally on your computer**. Your data never leaves your machine.
+It runs **entirely on your computer**. Your data never leaves your machine.
 
 > Open source under the [MIT License](LICENSE). Built for academic and educational purposes.
+
+![Leaderboard of an experiment](docs/images/leaderboard.png)
 
 ---
 
@@ -14,48 +16,52 @@ It runs **locally on your computer**. Your data never leaves your machine.
 
 - **Import your own data**: CSV/TSV (the separator is detected automatically), Excel, JSON and Parquet.
 - **Choose what to predict**: pick any column as the target. MLperformance detects whether the problem is **classification** (predicting a category) or **regression** (predicting a number), and you can override it.
-- **Test one algorithm or all of them**: up to 12 classifiers and 13 regressors from scikit-learn, plus XGBoost and LightGBM if they are installed.
+- **Test one algorithm, some, or all of them**: 12 classifiers and 13 regressors from scikit-learn, plus XGBoost and LightGBM if they are installed.
 - **Automatic preprocessing**: fills missing values, scales numeric columns, one-hot encodes text columns and ignores columns that cannot help (IDs, empty or constant columns).
 - **Sound evaluation**: k-fold cross-validation on the training split plus a held-out test set.
-- **Saved experiments**: every run is stored in `runs/`, so you can reopen it later and compare charts.
-- **Charts for each algorithm**:
-  - Leaderboard and metric comparison
-  - Cross-validation stability (score spread across folds)
+- **Saved experiments**: every run is stored, so you can reopen it later and compare charts.
+- **Charts for each algorithm** (hover over them for exact values):
+  - Leaderboard and comparison by any metric
+  - Cross-validation stability
   - Training time
   - Confusion matrix and ROC curves (classification)
   - Predicted vs. actual, error distribution and error comparison (regression)
   - Feature importance
-- **Download trained models** (`.joblib`) and use them in your own Python code.
+- **Export** the leaderboard as CSV and trained models as `.joblib` files for your own Python code.
+- **Light and dark themes**, following your system setting by default.
 - **Command-line interface** for scripting and batch use.
 
-## Quick start
+| New experiment | Algorithm details | Dark mode |
+|---|---|---|
+| ![New experiment screen](docs/images/new-experiment.png) | ![Algorithm details screen](docs/images/algorithm-details.png) | ![Error comparison in dark mode](docs/images/dark-mode.png) |
+
+## Download (Windows)
+
+1. Download `MLperformance-windows.zip` from the [Releases](../../releases) page.
+2. Extract the zip anywhere, for example to `Documents\MLperformance`.
+3. Double-click **`MLperformance.exe`**.
+
+You don't need to install Python. Windows SmartScreen may warn you the first time because the app is not code-signed. Click **More info → Run anyway**.
+
+## Running from source (Windows, Linux, macOS)
 
 You need **Python 3.10 or newer**.
 
-### Windows
-
-Double-click `run.bat`, or in a terminal:
-
-```bat
-run.bat
-```
-
-### Linux / macOS
-
 ```sh
-chmod +x run.sh
-./run.sh
+git clone https://github.com/<your-user>/MLperformance.git
+cd MLperformance
 ```
 
-The first run creates a virtual environment and installs the dependencies. The app then opens in your browser at <http://localhost:8501>.
+- **Windows**: double-click `run.bat`.
+- **Linux / macOS**: run `./run.sh`.
 
-### Manual installation
+The first run creates a virtual environment and installs the dependencies. To set it up by hand:
 
 ```sh
 python -m venv .venv
 # Windows: .venv\Scripts\activate    Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
-streamlit run app.py
+python MLperformance.py
 ```
 
 Optional extra algorithms:
@@ -64,33 +70,39 @@ Optional extra algorithms:
 pip install xgboost lightgbm
 ```
 
+## Building the executable yourself
+
+On Windows, run:
+
+```bat
+build.bat
+```
+
+This creates `dist\MLperformance\MLperformance.exe`, runs a self-test on the built app, and packages everything as `release\MLperformance-windows.zip`. You can also verify any build manually with `MLperformance.exe --self-test`. The exit code is 0 when the build is complete.
+
+Pushing a version tag (for example `v0.2.0`) to GitHub builds the zip automatically and publishes it as a release.
+
 ## How to use
 
-1. Open the **New experiment** page.
-2. Upload a file, or pick one of the example datasets in [`examples/`](examples).
-3. Choose the **column you want to predict**.
-4. Choose **Test all algorithms** or **Choose specific algorithms**.
-5. Click **Train models**.
-6. Open the **Results** page to see the leaderboard and the charts for every algorithm.
+1. On **New experiment**, click **Open file…** or load one of the example datasets.
+2. Choose the **column to predict**.
+3. Keep **Test all algorithms** or pick specific ones.
+4. Click **Train models**. The window stays responsive while training runs.
+5. Click **Open results** to see the leaderboard and the charts for every algorithm.
 
-A step-by-step walkthrough is in the [User Guide](docs/USER_GUIDE.md).
+The [User Guide](docs/USER_GUIDE.md) walks through each step and explains how to read every chart.
 
 ## Command line
 
 ```sh
-# Compare all algorithms
 python -m mlperformance train examples/iris.csv --target species
-
-# Compare only some algorithms
 python -m mlperformance train examples/diabetes.csv --target disease_progression \
     --algorithms "Random Forest" "Ridge Regression"
-
-# List the available algorithms and saved experiments
-python -m mlperformance algorithms
-python -m mlperformance list
+python -m mlperformance algorithms   # list available algorithms
+python -m mlperformance list         # list saved experiments
 ```
 
-Experiments created from the command line also appear on the app's **Results** page.
+Experiments created from the command line also appear in the app.
 
 ## Using a trained model in Python
 
@@ -98,12 +110,21 @@ Experiments created from the command line also appear on the app's **Results** p
 import pandas as pd
 from mlperformance.storage import load_model
 
-model = load_model("runs/<experiment-id>/models/random-forest.joblib")
-new_data = pd.read_csv("new_samples.csv")  # same columns as the training file
+model = load_model("random-forest.joblib")  # exported from the app
+new_data = pd.read_csv("new_samples.csv")   # same columns as the training file
 print(model.predict(new_data))
 ```
 
 > Only load `.joblib` files that you trust: loading one can run arbitrary code.
+
+## Where experiments are stored
+
+| System | Folder |
+|---|---|
+| Windows | `%LOCALAPPDATA%\MLperformance\runs` |
+| Linux / macOS | `~/.local/share/MLperformance/runs` |
+
+Set the `MLPERFORMANCE_RUNS_DIR` environment variable to use another folder. The **Experiment info** tab shows the exact location.
 
 ## Documentation
 
@@ -112,23 +133,24 @@ print(model.predict(new_data))
 | [User Guide](docs/USER_GUIDE.md) | Step-by-step usage, data format, how to read each chart |
 | [Algorithms & Metrics](docs/ALGORITHMS_AND_METRICS.md) | What each algorithm does and what each metric means |
 | [Architecture](docs/ARCHITECTURE.md) | How the code is organized and how a run flows through it |
-| [Contributing](CONTRIBUTING.md) | Development setup, tests and how to add an algorithm |
+| [Contributing](CONTRIBUTING.md) | Development setup, tests, building and adding algorithms |
 
 ## Project structure
 
 ```
 MLperformance/
-├── app.py                  # Streamlit entry point
-├── app_pages/              # Page scripts (New experiment, Results)
+├── MLperformance.py        # App launcher (also the executable's entry point)
+├── MLperformance.spec      # PyInstaller build recipe
+├── build.bat               # Builds the Windows executable and zip
 ├── mlperformance/
 │   ├── data.py             # File loading
 │   ├── preprocessing.py    # Task detection, feature selection, preprocessing
 │   ├── models.py           # Algorithm registry
 │   ├── trainer.py          # Training, cross-validation and metrics
 │   ├── storage.py          # Saving and loading experiments
-│   ├── plots.py            # Plotly charts
 │   ├── __main__.py         # Command-line interface
-│   └── ui/                 # Page implementations
+│   └── gui/                # Desktop interface (PySide6 + matplotlib)
+├── assets/                 # App icon
 ├── examples/               # Sample datasets
 ├── tests/                  # Automated tests (pytest)
 └── docs/                   # Documentation
@@ -141,11 +163,14 @@ pip install pytest
 pytest
 ```
 
+The interface tests open the real app windows off-screen and run full experiments.
+
 ## Limitations
 
 - Date/time columns are ignored for now.
 - Hyperparameters use sensible defaults; there is no automatic tuning yet.
-- Very large datasets (hundreds of thousands of rows) make some algorithms (SVM, KNN) slow. The app warns you before training.
+- On very large datasets (hundreds of thousands of rows), SVM and KNN become slow. The app warns you before training.
+- The prebuilt executable is for Windows. Linux and macOS users run from source.
 
 ## License
 

@@ -1,5 +1,5 @@
 @echo off
-REM Starts MLperformance on Windows. Creates the virtual environment on first run.
+REM Runs MLperformance from source on Windows. Creates the virtual environment on first run.
 cd /d "%~dp0"
 if not exist .venv (
     echo Creating virtual environment...
@@ -7,7 +7,7 @@ if not exist .venv (
     .venv\Scripts\python -m pip install --upgrade pip
     .venv\Scripts\python -m pip install -r requirements.txt || goto :error
 )
-.venv\Scripts\python -m streamlit run app.py
+start "" .venv\Scripts\pythonw MLperformance.py
 goto :eof
 
 :error
