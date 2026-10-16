@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import time
 import uuid
 import warnings
@@ -34,6 +35,7 @@ from sklearn.preprocessing import LabelEncoder
 from .models import get_algorithms
 from .preprocessing import (
     CLASSIFICATION,
+    REGRESSION,
     FeatureInfo,
     build_preprocessor,
     clean_features,
@@ -52,14 +54,14 @@ METRICS = {
         "recall_weighted": ("Recall (weighted)", True),
         "roc_auc": ("ROC AUC", True),
     },
-    "regression": {
+    REGRESSION: {
         "r2": ("R²", True),
         "rmse": ("RMSE", False),
         "mae": ("MAE", False),
         "median_ae": ("Median absolute error", False),
     },
 }
-PRIMARY_METRIC = {CLASSIFICATION: "f1_weighted", "regression": "r2"}
+PRIMARY_METRIC = {CLASSIFICATION: "f1_weighted", REGRESSION: "r2"}
 
 MAX_STORED_POINTS = 5000  # regression scatter points kept per model
 MAX_IMPORTANCES = 25
@@ -78,12 +80,15 @@ class ModelBundle:
 
     algorithm: str
     pipeline: Pipeline
-    features: list[str]
+    feature_info: FeatureInfo
     target: str
     task: str
     label_encoder: LabelEncoder | None = None
 
-    feature_info: FeatureInfo | None = None
+    @property
+    def features(self) -> list[str]:
+        """Columns the model reads from the input data."""
+        return self.feature_info.used
 
     def predict(self, df: pd.DataFrame) -> np.ndarray:
         """Predict on raw data with the same columns as the training file."""
@@ -173,7 +178,9 @@ def run_experiment(
         classes = [str(c) for c in label_encoder.classes_]
         if len(classes) < 2:
             raise ValueError("The target column needs at least two different classes.")
-        if np.bincount(y).min() >= 2:
+        # Stratifying needs two samples per class and room for every class on both sides.
+        n_test = math.ceil(settings.test_size * len(y))
+        if np.bincount(y).min() >= 2 and min(n_test, len(y) - n_test) >= len(classes):
             stratify = y
     else:
         y = pd.to_numeric(y_raw, errors="raise").to_numpy(dtype=float)
@@ -212,8 +219,7 @@ def run_experiment(
                                PRIMARY_METRIC[task], len(classes))
             result["name"] = name
             experiment.results.append(result)
-            bundles[name] = ModelBundle(name, pipeline, info.used, target, task,
-                                        label_encoder, info)
+            bundles[name] = ModelBundle(name, pipeline, info, target, task, label_encoder)
         except Exception as exc:  # one failing algorithm must not stop the others
             experiment.results.append({"name": name, "status": "error", "error": str(exc)})
     if progress:
@@ -257,7 +263,11 @@ def _evaluate(pipeline, task, X_train, X_test, y_train, y_test, cv, primary, n_c
             "feature_importance": _feature_importance(pipeline),
         }
         if task == CLASSIFICATION:
-            y_proba = pipeline.predict_proba(X_test) if hasattr(pipeline, "predict_proba") else None
+            y_proba = None
+            if hasattr(pipeline, "predict_proba"):
+                # Columns follow the classes seen in training; classes missing there get 0.
+                y_proba = np.zeros((len(y_test), n_classes))
+                y_proba[:, pipeline.classes_] = pipeline.predict_proba(X_test)
             result.update(_classification_details(y_test, y_pred, y_proba, n_classes))
         else:
             result.update(_regression_details(y_test, y_pred))

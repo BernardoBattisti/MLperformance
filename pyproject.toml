@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mlperformance"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Find the best machine learning algorithm for your data: upload a file, pick a target, compare models with charts."
 readme = "README.md"
 license = "MIT"
@@ -37,6 +37,9 @@ mlperformance = "mlperformance.__main__:main"
 
 [project.gui-scripts]
 mlperformance-app = "mlperformance.gui.app:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "mlperformance.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["mlperformance*"]

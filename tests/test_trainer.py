@@ -59,6 +59,23 @@ def test_mixed_types_and_missing_values():
     assert exp.classes == ["no", "yes"]
 
 
+def test_many_classes_small_dataset():
+    # 8 classes x 2 rows: the 4-row test split cannot hold every class, so no stratification.
+    df = pd.DataFrame({"x": np.arange(16.0), "y": np.repeat(list("abcdefgh"), 2)})
+    exp, _ = run_experiment(df, "y", ["Decision Tree"], settings=FAST)
+    assert exp.results[0]["status"] == "ok"
+    assert exp.settings["n_test"] == 4
+
+
+def test_predict_requires_training_columns():
+    df = load_dataset(EXAMPLES / "iris.csv")
+    _, bundles = run_experiment(df, "species", ["Naive Bayes"], settings=FAST)
+    bundle = bundles["Naive Bayes"]
+    assert bundle.features == bundle.feature_info.used
+    with pytest.raises(ValueError, match="Missing column"):
+        bundle.predict(df.drop(columns=bundle.features[0]))
+
+
 def test_unknown_algorithm_rejected():
     df = load_dataset(EXAMPLES / "iris.csv")
     with pytest.raises(ValueError, match="Unknown algorithm"):

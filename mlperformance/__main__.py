@@ -43,7 +43,7 @@ def _train(args: argparse.Namespace) -> int:
     for r in experiment.results:
         if r["status"] == "error":
             print(f"  ✗ {r['name']}: {r['error']}")
-    print(f"\nSaved to {run_dir}. Open the app (streamlit run app.py) to see the charts.")
+    print(f"\nSaved to {run_dir}. Open the app (python MLperformance.py) to see the charts.")
     return 0
 
 

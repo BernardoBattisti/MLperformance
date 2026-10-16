@@ -61,7 +61,7 @@ def list_experiments(runs_dir: str | Path | None = None) -> list[Experiment]:
     for path in runs_dir.glob("*/experiment.json"):
         try:
             experiments.append(Experiment.from_dict(json.loads(path.read_text(encoding="utf-8"))))
-        except (ValueError, TypeError):
+        except (OSError, ValueError, TypeError):
             continue
     return sorted(experiments, key=lambda e: e.created_at, reverse=True)
 
