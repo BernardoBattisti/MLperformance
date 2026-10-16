@@ -81,3 +81,27 @@ def test_results_empty_state(app, runs_dir):
     window._go(1)
     assert window.results_view.stack.currentWidget() is window.results_view.empty
     window.close()
+
+
+
+class FakeWindow:
+    raised = False
+
+    def showNormal(self): pass
+
+    def raise_(self): self.raised = True
+
+    def activateWindow(self): pass
+
+
+def test_second_launch_reaches_running_instance(app, monkeypatch):
+    from mlperformance.gui import app as app_module
+
+    monkeypatch.setattr(app_module, "_instance_name", lambda: "MLperformance-test-instance")
+    assert not app_module._activate_running_instance()
+    window = FakeWindow()
+    server = app_module._listen_for_other_instances(lambda: window)
+    assert app_module._activate_running_instance()
+    pump()
+    assert window.raised
+    server.close()

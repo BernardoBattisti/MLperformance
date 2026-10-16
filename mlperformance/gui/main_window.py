@@ -58,7 +58,6 @@ class MainWindow(QMainWindow):
         saved = self.settings.value("theme", "System")
         self.theme_combo.setCurrentText(saved if saved in THEME_CHOICES else "System")
         self.apply_theme()
-        self.results_view.reload()
 
     def _build_sidebar(self) -> QFrame:
         bar = QFrame()
